@@ -3,6 +3,7 @@ import {
   useQuery,
 } from '@tanstack/react-query'
 import {
+  getProductById,
   getProductCategories,
   getProducts,
 } from '../api/productsApi.js'
@@ -32,6 +33,16 @@ export const productKeys = {
       sortBy,
       order,
     },
+  ],
+
+  details: () => [
+    ...productKeys.all,
+    'detail',
+  ],
+
+  detail: (productId) => [
+    ...productKeys.details(),
+    String(productId),
   ],
 
   categories: () => [
@@ -68,6 +79,26 @@ export function productsQueryOptions({
   })
 }
 
+export function productQueryOptions(productId) {
+  const normalizedProductId = String(
+    productId ?? '',
+  ).trim()
+
+  return queryOptions({
+    queryKey: productKeys.detail(
+      normalizedProductId,
+    ),
+
+    queryFn: ({ signal }) =>
+      getProductById({
+        productId: normalizedProductId,
+        signal,
+      }),
+
+    enabled: Boolean(normalizedProductId),
+  })
+}
+
 export function productCategoriesQueryOptions() {
   return queryOptions({
     queryKey: productKeys.categories(),
@@ -80,9 +111,19 @@ export function productCategoriesQueryOptions() {
 }
 
 export function useProducts(options = {}) {
-  return useQuery(productsQueryOptions(options))
+  return useQuery(
+    productsQueryOptions(options),
+  )
+}
+
+export function useProduct(productId) {
+  return useQuery(
+    productQueryOptions(productId),
+  )
 }
 
 export function useProductCategories() {
-  return useQuery(productCategoriesQueryOptions())
+  return useQuery(
+    productCategoriesQueryOptions(),
+  )
 }

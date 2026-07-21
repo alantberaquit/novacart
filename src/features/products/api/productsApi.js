@@ -16,7 +16,10 @@ const PRODUCT_CARD_FIELDS = [
   'thumbnail',
 ]
 
-function getProductsEndpoint({ search, category }) {
+function getProductsEndpoint({
+  search,
+  category,
+}) {
   const normalizedSearch = search?.trim()
 
   if (normalizedSearch) {
@@ -61,13 +64,33 @@ export async function getProducts({
     category,
   })
 
-  return fetchJson(`${endpoint}?${searchParams.toString()}`, {
-    signal,
-  })
+  return fetchJson(
+    `${endpoint}?${searchParams.toString()}`,
+    {
+      signal,
+    },
+  )
 }
 
-export async function getProductCategories({ signal } = {}) {
-  return fetchJson(`${API_BASE_URL}/products/categories`, {
-    signal,
-  })
+export async function getProductCategories({
+  signal,
+} = {}) {
+  return fetchJson(
+    `${API_BASE_URL}/products/categories`,
+    {
+      signal,
+    },
+  )
+}
+
+export async function getProductById({
+  productId,
+  signal,
+}) {
+  return fetchJson(
+    `${API_BASE_URL}/products/${encodeURIComponent(productId)}`,
+    {
+      signal,
+    },
+  )
 }

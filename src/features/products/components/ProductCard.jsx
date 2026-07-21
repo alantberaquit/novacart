@@ -1,4 +1,12 @@
-import { PackageCheck, Star } from 'lucide-react'
+import {
+  useQueryClient,
+} from '@tanstack/react-query'
+import {
+  PackageCheck,
+  Star,
+} from 'lucide-react'
+import { Link } from 'react-router'
+import { productQueryOptions } from '../queries/productsQuery.js'
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -9,7 +17,11 @@ function formatCategory(category = '') {
   return category
     .split('-')
     .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map(
+      (word) =>
+        word.charAt(0).toUpperCase() +
+        word.slice(1),
+    )
     .join(' ')
 }
 
@@ -31,7 +43,10 @@ function formatCategory(category = '') {
  * @param {{ product: Product }} props
  */
 function ProductCard({ product }) {
+  const queryClient = useQueryClient()
+
   const {
+    id,
     title,
     description,
     category,
@@ -43,14 +58,28 @@ function ProductCard({ product }) {
     thumbnail,
   } = product
 
+  const productPath = `/products/${id}`
+
   const stockLabel =
     stock > 0
       ? `${stock} available`
       : 'Out of stock'
 
+  function prefetchProduct() {
+    void queryClient.prefetchQuery(
+      productQueryOptions(id),
+    )
+  }
+
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-xl">
-      <div className="relative overflow-hidden bg-slate-100">
+      <Link
+        to={productPath}
+        onMouseEnter={prefetchProduct}
+        onFocus={prefetchProduct}
+        className="relative block overflow-hidden bg-slate-100"
+        aria-label={`View details for ${title}`}
+      >
         <img
           src={thumbnail}
           alt={title}
@@ -64,17 +93,24 @@ function ProductCard({ product }) {
             {discountPercentage.toFixed(0)}% off
           </span>
         )}
-      </div>
+      </Link>
 
       <div className="flex flex-1 flex-col p-5">
         <div className="flex items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
               {formatCategory(category)}
             </p>
 
             <h2 className="mt-2 line-clamp-2 text-lg font-extrabold leading-snug text-slate-950">
-              {title}
+              <Link
+                to={productPath}
+                onMouseEnter={prefetchProduct}
+                onFocus={prefetchProduct}
+                className="transition hover:text-brand-700"
+              >
+                {title}
+              </Link>
             </h2>
           </div>
 
@@ -99,7 +135,11 @@ function ProductCard({ product }) {
         <div className="mt-4 flex items-center gap-2 text-sm text-slate-500">
           <PackageCheck
             size={16}
-            className={stock > 0 ? 'text-emerald-600' : 'text-rose-600'}
+            className={
+              stock > 0
+                ? 'text-emerald-600'
+                : 'text-rose-600'
+            }
             aria-hidden="true"
           />
 
