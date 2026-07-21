@@ -1,11 +1,10 @@
-import {
-  useQueryClient,
-} from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   PackageCheck,
   Star,
 } from 'lucide-react'
 import { Link } from 'react-router'
+import { useCart } from '../../cart/useCart.js'
 import { productQueryOptions } from '../queries/productsQuery.js'
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
@@ -44,6 +43,7 @@ function formatCategory(category = '') {
  */
 function ProductCard({ product }) {
   const queryClient = useQueryClient()
+  const { addItem } = useCart()
 
   const {
     id,
@@ -69,6 +69,10 @@ function ProductCard({ product }) {
     void queryClient.prefetchQuery(
       productQueryOptions(id),
     )
+  }
+
+  function handleAddToCart() {
+    addItem(product)
   }
 
   return (
@@ -160,10 +164,14 @@ function ProductCard({ product }) {
 
             <button
               type="button"
+              onClick={handleAddToCart}
               disabled={stock <= 0}
+              aria-label={`Add ${title} to cart`}
               className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
-              Add to cart
+              {stock > 0
+                ? 'Add to cart'
+                : 'Out of stock'}
             </button>
           </div>
         </div>

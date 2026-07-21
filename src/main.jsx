@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { RouterProvider } from 'react-router/dom'
 import { queryClient } from './app/queryClient.js'
 import { router } from './app/router.jsx'
+import CartProvider from './features/cart/CartProvider.jsx'
 import './styles/index.css'
 
 const rootElement = document.getElementById('root')
@@ -16,7 +17,9 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <CartProvider>
+        <RouterProvider router={router} />
+      </CartProvider>
 
       <ReactQueryDevtools
         initialIsOpen={false}

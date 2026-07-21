@@ -14,6 +14,7 @@ import {
   Link,
   useParams,
 } from 'react-router'
+import { useCart } from '../features/cart/useCart.js'
 import ProductGallery from '../features/products/components/ProductGallery.jsx'
 import { useProduct } from '../features/products/queries/productsQuery.js'
 
@@ -115,6 +116,7 @@ function ProductDetailsSkeleton() {
 
 function ProductDetailsPage() {
   const { productId } = useParams()
+  const { addItem } = useCart()
 
   const {
     data: product,
@@ -228,6 +230,10 @@ function ProductDetailsPage() {
     : null
 
   const isInStock = stock > 0
+
+  function handleAddToCart() {
+    addItem(product)
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
@@ -363,7 +369,9 @@ function ProductDetailsPage() {
 
           <button
             type="button"
+            onClick={handleAddToCart}
             disabled={!isInStock}
+            aria-label={`Add ${title} to cart`}
             className="mt-8 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 text-base font-black text-white transition hover:-translate-y-0.5 hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             <Box
