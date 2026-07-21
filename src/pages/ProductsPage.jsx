@@ -5,9 +5,16 @@ import {
 } from 'lucide-react'
 import ProductCard from '../features/products/components/ProductCard.jsx'
 import ProductCardSkeleton from '../features/products/components/ProductCardSkeleton.jsx'
-import { useProducts } from '../features/products/queries/productsQuery.js'
-
-const PRODUCTS_PER_PAGE = 12
+import ProductCatalogControls from '../features/products/components/ProductCatalogControls.jsx'
+import ProductPagination from '../features/products/components/ProductPagination.jsx'
+import {
+  PRODUCTS_PER_PAGE,
+  useProductCatalogParams,
+} from '../features/products/hooks/useProductCatalogParams.js'
+import {
+  useProductCategories,
+  useProducts,
+} from '../features/products/queries/productsQuery.js'
 
 const skeletonItems = Array.from(
   { length: PRODUCTS_PER_PAGE },
@@ -16,6 +23,23 @@ const skeletonItems = Array.from(
 
 function ProductsPage() {
   const {
+    search,
+    category,
+    sort,
+    sortBy,
+    order,
+    page,
+    limit,
+    skip,
+    hasActiveParameters,
+    setSearch,
+    setCategory,
+    setSort,
+    setPage,
+    resetCatalog,
+  } = useProductCatalogParams()
+
+  const {
     data,
     error,
     isError,
@@ -23,9 +47,19 @@ function ProductsPage() {
     isPending,
     refetch,
   } = useProducts({
-    limit: PRODUCTS_PER_PAGE,
-    skip: 0,
+    limit,
+    skip,
+    search,
+    category,
+    sortBy,
+    order,
   })
+
+  const {
+    data: categories = [],
+    isError: categoriesError,
+    isPending: categoriesPending,
+  } = useProductCategories()
 
   const products = data?.products ?? []
   const totalProducts = data?.total ?? 0
@@ -49,8 +83,8 @@ function ProductsPage() {
           </h1>
 
           <p className="mt-4 max-w-2xl text-pretty leading-7 text-slate-600">
-            Browse products loaded from the DummyJSON API. Search, filtering,
-            sorting and pagination will be added in the next stages.
+            Search, filter, sort, and browse products loaded from the DummyJSON
+            API. Your current catalog view is stored in the page URL.
           </p>
         </div>
 
@@ -76,9 +110,26 @@ function ProductsPage() {
         )}
       </div>
 
+      <ProductCatalogControls
+        search={search}
+        category={category}
+        sort={sort}
+        categories={categories}
+        categoriesPending={categoriesPending}
+        categoriesError={categoriesError}
+        hasActiveParameters={hasActiveParameters}
+        onSearch={setSearch}
+        onCategoryChange={setCategory}
+        onSortChange={setSort}
+        onReset={resetCatalog}
+      />
+
       {isPending && (
         <>
-          <p className="sr-only" role="status">
+          <p
+            className="sr-only"
+            role="status"
+          >
             Loading products.
           </p>
 
@@ -116,7 +167,11 @@ function ProductsPage() {
             onClick={() => refetch()}
             className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-brand-600"
           >
-            <RefreshCw size={18} aria-hidden="true" />
+            <RefreshCw
+              size={18}
+              aria-hidden="true"
+            />
+
             Try again
           </button>
         </div>
@@ -136,20 +191,39 @@ function ProductsPage() {
           </h2>
 
           <p className="mx-auto mt-3 max-w-xl leading-7 text-slate-600">
-            The catalog did not return any products for this request.
+            Try changing the search term, category, sorting option, or page.
           </p>
+
+          {hasActiveParameters && (
+            <button
+              type="button"
+              onClick={resetCatalog}
+              className="mt-6 rounded-xl bg-slate-950 px-5 py-3 font-bold text-white transition hover:bg-brand-600"
+            >
+              Reset catalog
+            </button>
+          )}
         </div>
       )}
 
       {!isPending && !isError && products.length > 0 && (
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-            />
-          ))}
-        </div>
+        <>
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+              />
+            ))}
+          </div>
+
+          <ProductPagination
+            currentPage={page}
+            totalItems={totalProducts}
+            pageSize={limit}
+            onPageChange={setPage}
+          />
+        </>
       )}
     </section>
   )
